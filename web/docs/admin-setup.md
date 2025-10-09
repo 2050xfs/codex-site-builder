@@ -10,7 +10,7 @@ This guide walks administrators through preparing the AutoSite Builder stack for
 
 ## 2. Required Environment Variables
 
-Define the following secrets in your hosting environment and Daytona workspace templates:
+Use the provided `.env.example` as a template and define the following secrets in your hosting environment and Daytona workspace templates:
 
 | Variable | Required | Description |
 | --- | --- | --- |

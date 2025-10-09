@@ -1,103 +1,129 @@
-import Image from "next/image";
+"use client";
+
+import { useMemo, useState } from "react";
+import ChatPanel from "@/components/builder/ChatPanel";
+
+const generationSteps = [
+  "Scaffolding initial site",
+  "Configuring deployment preview",
+  "Running quality checks",
+  "Finalising hand-off to operators",
+];
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [generationComplete, setGenerationComplete] = useState(false);
+  const [activeStep, setActiveStep] = useState(0);
+  const siteId = "demo-site";
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+  const stepLabels = useMemo(
+    () =>
+      generationSteps.map((label, index) => ({
+        label,
+        status:
+          generationComplete || index < activeStep
+            ? "complete"
+            : index === activeStep
+              ? "running"
+              : "pending",
+      })),
+    [generationComplete, activeStep]
+  );
+
+  const advanceGeneration = () => {
+    setActiveStep((previous) => {
+      const next = Math.min(previous + 1, generationSteps.length - 1);
+      if (next === generationSteps.length - 1) {
+        setGenerationComplete(true);
+      }
+      return next;
+    });
+  };
+
+  return (
+    <main className="min-h-screen bg-slate-950 text-slate-100">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-10">
+        <header className="flex flex-col gap-2">
+          <h1 className="text-3xl font-semibold tracking-tight">Site builder</h1>
+          <p className="text-sm text-slate-400">
+            Monitor generation progress and iterate on the deployed preview without leaving the
+            builder UI.
+          </p>
+        </header>
+
+        <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="flex flex-col gap-6 rounded-xl border border-slate-900 bg-slate-950/80 p-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Deployment preview</h2>
+              {!generationComplete ? (
+                <button
+                  type="button"
+                  onClick={advanceGeneration}
+                  className="rounded bg-blue-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-400"
+                >
+                  {activeStep === generationSteps.length - 1 ? "Mark complete" : "Advance"}
+                </button>
+              ) : (
+                <span className="rounded-full bg-green-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-green-300">
+                  Ready for iteration
+                </span>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <ol className="space-y-3 text-sm">
+                {stepLabels.map((step) => (
+                  <li
+                    key={step.label}
+                    className="flex items-center justify-between rounded border border-slate-900 bg-slate-900/60 px-3 py-2"
+                  >
+                    <span>{step.label}</span>
+                    <span
+                      className={
+                        step.status === "complete"
+                          ? "text-green-400"
+                          : step.status === "running"
+                            ? "text-blue-400"
+                            : "text-slate-500"
+                      }
+                    >
+                      {step.status === "complete"
+                        ? "Complete"
+                        : step.status === "running"
+                          ? "In progress"
+                          : "Pending"}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+
+              <div className="rounded-lg border border-slate-900 bg-slate-900/60 p-6">
+                <h3 className="text-base font-semibold">Preview placeholder</h3>
+                <p className="mt-2 text-sm text-slate-400">
+                  Deployments are simulated in this sandbox. Use the chat panel to request
+                  adjustments and the editor agent will apply them to the generated workspace.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <aside className="rounded-xl border border-slate-900 bg-slate-950/80 p-6">
+            {generationComplete ? (
+              <ChatPanel siteId={siteId} />
+            ) : (
+              <div className="flex h-full flex-col justify-center gap-4 text-sm text-slate-300">
+                <p>
+                  The editor chat becomes available once generation finishes. Use the controls on the
+                  left to walk through the build steps.
+                </p>
+                <p className="text-xs text-slate-500">
+                  Progress is simulated for demonstration purposes. Once complete, you can iterate on
+                  the preview directly from this page.
+                </p>
+              </div>
+            )}
+          </aside>
+        </section>
+      </div>
+    </main>
   );
 }

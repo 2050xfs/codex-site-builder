@@ -1,103 +1,149 @@
-import Image from "next/image";
+"use client";
+
+import { FormEvent, useMemo, useState } from "react";
+import SandboxLauncher from "../components/builder/SandboxLauncher";
+
+type GenerationStatus = "idle" | "running" | "success" | "error";
+
+type GenerationResult = {
+  summary: string;
+  repositoryUrl: string;
+};
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [siteId, setSiteId] = useState("site-prod-001");
+  const [repoUrl, setRepoUrl] = useState("https://github.com/example/repo");
+  const [status, setStatus] = useState<GenerationStatus>("idle");
+  const [result, setResult] = useState<GenerationResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
+  const handleGenerate = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setStatus("running");
+    setError(null);
+    setResult(null);
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      setResult({
+        summary: `Site ${siteId} generated from ${repoUrl}.`,
+        repositoryUrl: repoUrl,
+      });
+      setStatus("success");
+    } catch (generationError) {
+      setStatus("error");
+      setError(
+        generationError instanceof Error
+          ? generationError.message
+          : "An unknown error occurred while generating the site.",
+      );
+    }
+  };
+
+  const generationComplete = status === "success";
+
+  const statusLabel = useMemo(() => {
+    switch (status) {
+      case "running":
+        return "Generating site...";
+      case "success":
+        return "Generation complete.";
+      case "error":
+        return "Generation failed.";
+      default:
+        return "Awaiting input.";
+    }
+  }, [status]);
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-50">
+      <main className="mx-auto flex max-w-4xl flex-col gap-8 px-6 py-10">
+        <header className="flex flex-col gap-3">
+          <h1 className="text-3xl font-semibold text-white">Site Builder</h1>
+          <p className="text-sm text-slate-300">
+            Submit a site identifier and repository URL to generate the build artifacts. Once the
+            generation succeeds, Daytona will launch a sandbox automatically.
+          </p>
+        </header>
+
+        <section className="rounded-xl border border-slate-800 bg-slate-900/70 p-6 shadow-lg shadow-slate-950/30">
+          <form className="flex flex-col gap-4" onSubmit={handleGenerate}>
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-slate-200" htmlFor="site-id">
+                Site ID
+              </label>
+              <input
+                id="site-id"
+                name="siteId"
+                value={siteId}
+                onChange={(event) => setSiteId(event.target.value)}
+                className="rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/50"
+                placeholder="site-prod-001"
+                required
+              />
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-slate-200" htmlFor="repo-url">
+                Repository URL
+              </label>
+              <input
+                id="repo-url"
+                name="repoUrl"
+                value={repoUrl}
+                onChange={(event) => setRepoUrl(event.target.value)}
+                className="rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/50"
+                placeholder="https://github.com/example/repo"
+                required
+                type="url"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="inline-flex items-center justify-center rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-emerald-950 transition hover:bg-emerald-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+              disabled={status === "running"}
+            >
+              {status === "running" ? "Generating..." : "Generate site"}
+            </button>
+          </form>
+        </section>
+
+        <section className="rounded-xl border border-slate-800 bg-slate-900/70 p-6 shadow-lg shadow-slate-950/30">
+          <div className="flex flex-col gap-3">
+            <header className="flex flex-col gap-1">
+              <h2 className="text-xl font-semibold text-white">Generation results</h2>
+              <p className="text-sm text-slate-300">{statusLabel}</p>
+            </header>
+
+            {status === "running" && (
+              <div className="flex items-center gap-2 text-sm text-slate-200">
+                <span className="h-3 w-3 animate-spin rounded-full border-2 border-slate-500 border-r-transparent"></span>
+                Preparing artifacts for {siteId}...
+              </div>
+            )}
+
+            {result && (
+              <div className="rounded-lg border border-slate-800 bg-slate-950/80 p-4 text-sm text-slate-200">
+                <p>{result.summary}</p>
+                <p className="mt-1 truncate text-slate-300" title={result.repositoryUrl}>
+                  {result.repositoryUrl}
+                </p>
+              </div>
+            )}
+
+            {status === "error" && error && (
+              <div className="rounded-lg border border-red-500/40 bg-red-950/40 p-4 text-sm text-red-200">
+                {error}
+              </div>
+            )}
+          </div>
+
+          {generationComplete && (
+            <SandboxLauncher siteId={siteId} repoUrl={repoUrl} generationComplete={generationComplete} />
+          )}
+        </section>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }

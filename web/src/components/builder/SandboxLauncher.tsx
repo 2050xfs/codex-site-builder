@@ -133,7 +133,6 @@ export default function SandboxLauncher({
                 ? error.message
                 : "Unable to launch the Daytona workspace.",
           });
-          lastLaunchKey.current = null;
         }
       } finally {
         if (!cancelled) {

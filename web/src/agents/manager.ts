@@ -54,5 +54,5 @@ export async function runManager(args: ManagerArgs) {
   });
   await saveRun({ siteId, runId, phase: "deploy", status: "ok", output: deploy });
 
-  return deploy;
+  return { ...deploy, repo };
 }

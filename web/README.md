@@ -1,36 +1,36 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Upflex AutoSite Builder
 
-## Getting Started
+This Next.js workspace hosts the agent pipeline, Daytona integration, and UI baseline for the Upflex AutoSite builder.
 
-First, run the development server:
+## Project Structure
+
+- `src/agents` — Type definitions, schemas, tool registry, and the manager orchestrator for the PLAN → SCAFFOLD → CODE → QA → DEPLOY pipeline.
+- `src/daytona` — Daytona workspace client/server helpers and API routes used by Code Mode.
+- `src/app` — Next.js app routes, including the `/api/agents/start` orchestrator entrypoint.
+- `scripts/quality-pre.mjs` — Pre-deploy quality gate that runs type checking, linting, and heuristics.
+- `tailwind.preset.cjs` & `app/globals.css` — Token-aware Tailwind configuration applied from brand settings.
+
+## Local Development
+
+Install dependencies and start the dev server:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The app will be available at http://localhost:3000. Update pages under `src/app` to iterate on the UI.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Admin Setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Before launching the service for editors, complete the admin onboarding steps in [`docs/admin-setup.md`](docs/admin-setup.md). The guide covers required API keys, environment configuration, persistence wiring, and how to operate the agent pipeline safely.
 
-## Learn More
+## Quality Checks
 
-To learn more about Next.js, take a look at the following resources:
+Run the bundled quality suite locally or inside Daytona before opening a PR:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run quality:pre
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This wraps `npm run typecheck`, `npm run lint`, basic accessibility heuristics, and SEO metadata checks.
